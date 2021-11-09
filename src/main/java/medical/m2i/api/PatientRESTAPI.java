@@ -1,6 +1,7 @@
 package medical.m2i.api;
 
 import entities.PatientEntity;
+import entities.VilleEntity;
 import medical.m2i.dao.DbConnection;
 
 import javax.persistence.EntityManager;
@@ -49,4 +50,21 @@ public class PatientRESTAPI {
 
     }
 
+    @DELETE
+    @Path("/{id}")
+    public void deleteOne(@PathParam("id") int id) {
+        PatientEntity p = em.find(PatientEntity.class, id);
+        EntityTransaction tx = em.getTransaction();
+        // D�but des modifications
+        try {
+            tx.begin();
+            em.remove(p);
+            tx.commit();
+        } catch (Exception e) {
+            tx.rollback();
+        } finally {
+            // em.close();
+            // emf.close();
+        }
+    }
 }

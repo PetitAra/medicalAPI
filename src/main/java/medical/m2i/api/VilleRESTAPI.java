@@ -13,12 +13,12 @@ import java.util.List;
 @Path("/ville")
 public class VilleRESTAPI {
 
-    EntityManager em= DbConnection.getInstance();
+    EntityManager em = DbConnection.getInstance();
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("")
-    public List<VilleEntity> getAll(){
+    public List<VilleEntity> getAll() {
         List<VilleEntity> v = em.createNativeQuery("SELECT * from ville", VilleEntity.class).getResultList();
         return v;
     }
@@ -26,12 +26,14 @@ public class VilleRESTAPI {
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public VilleEntity getOne(@PathParam("id") int id){return em.find(VilleEntity.class, id);}
+    public VilleEntity getOne(@PathParam("id") int id) {
+        return em.find(VilleEntity.class, id);
+    }
 
     @POST
     @Path("")
     @Consumes(MediaType.APPLICATION_JSON)
-    public void addVille (VilleEntity v){
+    public void addVille(VilleEntity v) {
         // Récupération d’une transaction
         EntityTransaction tx = em.getTransaction();
         // Début des modifications
@@ -46,5 +48,23 @@ public class VilleRESTAPI {
             // emf.close();
         }
 
+    }
+
+    @DELETE
+    @Path("/{id}")
+    public void deleteOne(@PathParam("id") int id) {
+        VilleEntity v = em.find(VilleEntity.class, id);
+        EntityTransaction tx = em.getTransaction();
+        // D�but des modifications
+        try {
+            tx.begin();
+            em.remove(v);
+            tx.commit();
+        } catch (Exception e) {
+            tx.rollback();
+        } finally {
+            // em.close();
+            // emf.close();
+        }
     }
 }
