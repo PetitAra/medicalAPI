@@ -27,8 +27,18 @@ public class VilleRESTAPI {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("")
-    public List<VilleEntity> getAll() {
-        List<VilleEntity> v = em.createNativeQuery("SELECT * from ville", VilleEntity.class).getResultList();
+    public List<VilleEntity> getAll(@QueryParam("nom") String vnom) {
+        //List<VilleEntity> v = em.createNativeQuery("SELECT * from ville", VilleEntity.class).getResultList();
+
+        List<VilleEntity> v = null;
+
+        System.out.println("le nom passé en param est " + vnom);
+
+        if (vnom ==null || vnom.length() == 0) {
+            v = em.createNamedQuery("ville.findAll").getResultList();
+        }else{
+            v = em.createNamedQuery("ville.findAllByNom").setParameter("nom",'%'+ vnom+'%').getResultList();
+        }
         return v;
     }
 

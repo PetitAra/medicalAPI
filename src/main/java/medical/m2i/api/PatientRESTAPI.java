@@ -29,8 +29,17 @@ public class PatientRESTAPI {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("")
-    public List<PatientEntity> getAll(){
-        List<PatientEntity> p = em.createNativeQuery("SELECT * from patient", PatientEntity.class).getResultList();
+    public List<PatientEntity> getAll(@QueryParam("nom") String pnom){
+        //List<PatientEntity> p = em.createNativeQuery("SELECT * from patient", PatientEntity.class).getResultList();
+        List<PatientEntity> p = null;
+
+        System.out.println("le nom passé en param est " + pnom);
+
+        if (pnom ==null || pnom.length() == 0) {
+           p = em.createNamedQuery("patient.findAll").getResultList();
+       }else{
+           p = em.createNamedQuery("patient.findAllByNom").setParameter("nom",'%'+ pnom+'%').getResultList();
+       }
         return p;
     }
 
@@ -47,7 +56,7 @@ public class PatientRESTAPI {
     public void addPatient (PatientEntity p){
 
         if (p == null){
-            throw new WebApplicationException(Response.Status.NOT_FOUND);
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
         }
 
         // Récupération d’une transaction
@@ -61,11 +70,8 @@ public class PatientRESTAPI {
             tx.rollback();
             System.out.println("Exception"+e.getMessage());
             throw e;
-        } finally {
-            // em.close();
-            // emf.close();
         }
-
+        em.refresh(p);
     }
 
     @DELETE
@@ -92,13 +98,17 @@ public class PatientRESTAPI {
     public void updatePatient(@PathParam("id") int id, PatientEntity pparam) {
 
         PatientEntity p=getPatient(id);
-
         p.setNom(pparam.getNom());
-        p.setVille(pparam.getVille());
         p.setPrenom(pparam.getPrenom());
         p.setAdresse(pparam.getAdresse());
         p.setDateNaissance(pparam.getDateNaissance());
 
+        VilleEntity v = em.find(VilleEntity.class, pparam.getVille());
+
+        if (v == null){
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        p.setVille(v);
 
         // Récupération d’une transaction
         EntityTransaction tx = em.getTransaction();
